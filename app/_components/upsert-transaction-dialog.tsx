@@ -1,6 +1,3 @@
-"use client";
-
-import { ArrowDownUpIcon } from "lucide-react";
 import {
   Dialog,
   DialogClose,
@@ -13,14 +10,6 @@ import {
 } from "./ui/dialog";
 import { Button } from "./ui/button";
 
-import { z } from "zod";
-import {
-  TransactionCategory,
-  TransactionPaymentMethod,
-  TransactionType,
-} from "@prisma/client";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
 import {
   Form,
   FormControl,
@@ -42,9 +31,22 @@ import {
   TRANSACTION_PAYMENT_METHOD_OPTIONS,
   TRANSACTION_TYPE_OPTIONS,
 } from "../_contants/transaction";
-import { DatePicker } from "./ui/date-picker";
+
+import { z } from "zod";
+import {
+  TransactionType,
+  TransactionCategory,
+  TransactionPaymentMethod,
+} from "@prisma/client";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { addTransaction } from "../_actions/add-transaction";
-import { useState } from "react";
+import { DatePicker } from "./ui/date-picker";
+
+interface UpsertTransactionDialogProps {
+  isOpen: boolean;
+  setIsOpen: (isOpen: boolean) => void;
+}
 
 const formSchema = z.object({
   name: z.string().trim().min(1, { message: "o nome é obrigatório." }),
@@ -63,9 +65,10 @@ const formSchema = z.object({
 
 type FormSchema = z.infer<typeof formSchema>;
 
-const AddTransactionButton = () => {
-  const [dialogOpen, setDialogOpen] = useState(false);
-
+const UpsertTransactionDialog = ({
+  isOpen,
+  setIsOpen,
+}: UpsertTransactionDialogProps) => {
   const form = useForm<FormSchema>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -87,7 +90,7 @@ const AddTransactionButton = () => {
       console.log(formattedData);
 
       await addTransaction(formattedData);
-      setDialogOpen(false);
+      setIsOpen(false);
       form.reset();
     } catch (error) {
       console.error(error);
@@ -96,20 +99,15 @@ const AddTransactionButton = () => {
 
   return (
     <Dialog
-      open={dialogOpen}
+      open={isOpen}
       onOpenChange={(open) => {
-        setDialogOpen(open);
+        setIsOpen(open);
         if (!open) {
           form.reset();
         }
       }}
     >
-      <DialogTrigger asChild>
-        <Button className="rounded-full font-bold">
-          Adicionar Transação
-          <ArrowDownUpIcon />
-        </Button>
-      </DialogTrigger>
+      <DialogTrigger asChild></DialogTrigger>
       <DialogContent>
         <DialogHeader className="flex items-center">
           <DialogTitle>Adicionar Transação</DialogTitle>
@@ -258,4 +256,4 @@ const AddTransactionButton = () => {
   );
 };
 
-export default AddTransactionButton;
+export default UpsertTransactionDialog;
